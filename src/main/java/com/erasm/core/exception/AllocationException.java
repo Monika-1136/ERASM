@@ -1,5 +1,7 @@
 package com.erasm.core.exception;
 
-public class AllocationException {
-
+public class AllocationException extends RuntimeException {
+    public AllocationException(String message) {
+        super(message);
+    }
 }

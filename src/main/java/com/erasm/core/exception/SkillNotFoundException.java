@@ -1,5 +1,7 @@
 package com.erasm.core.exception;
 
-public class SkillNotFoundException {
-
+public class SkillNotFoundException extends RuntimeException {
+    public SkillNotFoundException(String message) {
+        super(message);
+    }
 }

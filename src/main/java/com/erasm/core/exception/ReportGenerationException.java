@@ -1,5 +1,7 @@
 package com.erasm.core.exception;
 
-public class ReportGenerationException {
-
+public class ReportGenerationException extends RuntimeException {
+    public ReportGenerationException(String message) {
+        super(message);
+    }
 }
