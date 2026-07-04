@@ -1,5 +1,7 @@
 # Enterprise Resource Allocation & Skill Management System (ERASM)
 
+[![Build Status](https://github.com/your-username/ERASM/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/ERASM/actions)
+
 ERASM is a production-level Spring Boot enterprise application designed to manage, allocate, and monitor organization resources, skills, and certifications across multiple projects.
 
 ---
@@ -16,7 +18,43 @@ In modern enterprise environments, managing employee skillsets, matching them to
 
 ---
 
-## 2. Architecture & Design
+## 2. Folder Structure
+
+```
+ERASM/
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # GitHub Actions CI pipeline configuration
+├── docs/
+│   └── GIT_FLOW.md             # Git Flow branching model & release documentation
+├── src/
+│   ├── main/
+│   │   ├── java/com/erasm/core/ # Application source code
+│   │   │   ├── config/          # Spring beans and configuration (Security, OpenAPI)
+│   │   │   ├── controller/      # REST API Controllers (endpoints)
+│   │   │   ├── dto/             # Data Transfer Objects (request/response models)
+│   │   │   ├── entity/          # JPA Hibernate entities (database models)
+│   │   │   ├── enums/           # Core system enums (Status, Roles, Skill levels)
+│   │   │   ├── exception/       # Exception models & Global exception handler
+│   │   │   ├── mapper/          # Entity-DTO mapping utilities (ModelMapper)
+│   │   │   ├── repository/      # Spring Data JPA Repository layer
+│   │   │   └── service/         # Service layer (business logic & implementations)
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       ├── db_creation.sql  # Database initialization script
+│   │       └── ERASM_Postman_Collection.json
+│   └── test/                    # JUnit and Mockito test suite
+├── Dockerfile                   # Multi-stage Docker build file
+├── .dockerignore                # Docker ignore patterns
+├── docker-compose.yml           # Multi-container orchestration (App & MySQL)
+├── mvnw                         # Maven wrapper script
+├── pom.xml                      # Maven configuration
+└── README.md                    # Project documentation (this file)
+```
+
+---
+
+## 3. Architecture & Design
 
 ERASM adheres to the **Controller-Service-Repository** layered architecture:
 
@@ -31,40 +69,13 @@ graph TD
 ```
 
 ### Key Technical Stack:
-- **Core Framework**: Spring Boot 3.x
+- **Core Framework**: Spring Boot 3.x / 4.x
 - **Security**: Spring Security (Stateless JWT Authentication & RBAC)
 - **Data Access**: Spring Data JPA & Hibernate
 - **Database**: H2 (Development & Testing), MySQL (Production ready)
 - **Documentation**: SpringDoc OpenAPI / Swagger UI
 - **Testing**: JUnit 5, Mockito, Jacoco (Code Coverage)
-
----
-
-## 3. Database Design & ER Diagram
-
-The database is normalized to 3NF. Here is the Entity-Relationship diagram:
-
-```mermaid
-erDiagram
-    ROLES ||--o{ USERS : "has"
-    USERS ||--|| EMPLOYEES : "has profile"
-    EMPLOYEES ||--o{ EMPLOYEE_SKILLS : "has"
-    SKILLS ||--o{ EMPLOYEE_SKILLS : "belongs to"
-    EMPLOYEES ||--o{ CERTIFICATIONS : "holds"
-    PROJECTS ||--o{ ALLOCATIONS : "has"
-    EMPLOYEES ||--o{ ALLOCATIONS : "allocated to"
-    PROJECTS ||--o{ RESOURCE_REQUESTS : "contains"
-    SKILLS ||--o{ RESOURCE_REQUESTS : "requested for"
-    AUDIT_LOGS {
-        Long log_id PK
-        String action
-        String entity_name
-        Long entity_id
-        String performed_by
-        DateTime timestamp
-        String details
-    }
-```
+- **DevOps**: GitHub Actions, Docker, Docker Compose
 
 ---
 
@@ -111,10 +122,111 @@ Comprehensive Swagger/OpenAPI documentation is available at:
 
 ---
 
-## 7. Testing & Code Coverage
+## 7. Running with Docker & Docker Compose
 
-To run the unit tests and generate the Jacoco Code Coverage report:
+### 7.1 Using Docker Compose (Recommended)
+You can run both the database (`mysql`) and application (`erasm-app`) containers in a private network using Docker Compose.
+
+1. Build and run the services:
+   ```bash
+   docker compose up --build -d
+   ```
+2. The application will wait for MySQL to become healthy and then start. Check logs using:
+   ```bash
+   docker compose logs -f erasm-app
+   ```
+3. Access Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
+4. Tear down the services:
+   ```bash
+   docker compose down -v
+   ```
+
+### 7.2 Standalone Docker Container
+To build and run the application manually in a container:
+
+1. Build the Docker image:
+   ```bash
+   docker build -t erasm-app .
+   ```
+2. Run the container (ensure you have a running MySQL instance accessible or configure H2 profiles):
+   ```bash
+   docker run -d -p 8080:8080 --name erasm-app erasm-app
+   ```
+
+---
+
+## 8. Testing & Code Coverage
+
+To run the unit tests and verify the build locally:
 ```bash
-./mvnw clean test
+./mvnw clean verify
 ```
-The Jacoco HTML report will be generated at `target/site/jacoco/index.html`. Open it in any browser to inspect lines covered.
+This command compiles the project, runs all 273 unit tests, checks verification rules, and generates a Jacoco Code Coverage report at `target/site/jacoco/index.html`. Open it in any browser to inspect code coverage.
+
+---
+
+## 9. CI/CD Pipeline
+
+The project features a automated GitHub Actions workflow configured in `.github/workflows/ci.yml`. The pipeline:
+1. Triggers on pushes and pull requests to `main` and `develop` branches.
+2. Configures a Java 21 environment.
+3. Caches Maven packages to accelerate build runs.
+4. Executes `./mvnw clean verify` to run the entire unit test suite.
+5. Packages and archives the executable Spring Boot JAR file as a workflow artifact.
+6. Fails the build if any test fails.
+
+---
+
+## 10. Git Flow Workflow
+
+We use the **Git Flow** branching strategy for release management and development.
+
+### Git Flow Repository Structure
+```text
+main
+│
+├── develop
+│
+├── feature/*
+├── release/*
+└── hotfix/*
+```
+
+### Branching Strategy Diagram
+```mermaid
+gitGraph
+    commit id: "Initial commit" tag: "v0.9.0"
+    branch develop
+    checkout develop
+    commit id: "Feature A"
+    branch feature/some-feature
+    checkout feature/some-feature
+    commit id: "Work on Feature"
+    checkout develop
+    merge feature/some-feature id: "Merge feature"
+    branch release/v1.0.0
+    checkout release/v1.0.0
+    commit id: "Fix release bug"
+    checkout main
+    merge release/v1.0.0 id: "Release 1.0.0" tag: "v1.0.0"
+    checkout develop
+    merge release/v1.0.0 id: "Merge back release"
+    checkout main
+    branch hotfix/jwt-token-expiry
+    checkout hotfix/jwt-token-expiry
+    commit id: "Fix critical bug"
+    checkout main
+    merge hotfix/jwt-token-expiry id: "Hotfix 1.0.1" tag: "v1.0.1"
+    checkout develop
+    merge hotfix/jwt-token-expiry id: "Merge back hotfix"
+```
+
+### Summary of Branches:
+* **`main`**: Production-ready code.
+* **`develop`**: Main development branch.
+* **`feature/*`**: New features branched from `develop`.
+* **`release/*`**: Release candidate branches for testing and version tagging.
+* **`hotfix/*`**: Critical bug fixes branched directly from `main` and merged back into `main` and `develop`.
+
+For details on the branching strategy, merging procedure, versioning rules, and step-by-step guides with exact Git commands for release creation (`release/v1.0.0`) and hotfixes (`hotfix/jwt-token-expiry`), please read [docs/GIT_FLOW.md](docs/GIT_FLOW.md).
+

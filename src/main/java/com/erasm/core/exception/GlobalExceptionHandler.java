@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidWorkflowException.class)
     public ResponseEntity<ApiResponse<Void>> handleInvalidWorkflow(InvalidWorkflowException ex) {
         logger.warn("Invalid workflow transition: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 

@@ -4,7 +4,6 @@ import com.erasm.core.dto.request.SkillRequest;
 import com.erasm.core.dto.response.SkillResponse;
 import com.erasm.core.exception.SkillNotFoundException;
 import com.erasm.core.service.SkillService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -7,7 +7,6 @@ import com.erasm.core.dto.response.CertificationResponse;
 import com.erasm.core.dto.response.EmployeeResponse;
 import com.erasm.core.dto.response.EmployeeSkillResponse;
 import com.erasm.core.entity.*;
-import com.erasm.core.enums.AllocationStatus;
 import com.erasm.core.enums.SkillLevel;
 import com.erasm.core.exception.ResourceNotFoundException;
 import com.erasm.core.exception.SkillNotFoundException;
