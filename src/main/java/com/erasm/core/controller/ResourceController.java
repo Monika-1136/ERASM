@@ -18,7 +18,7 @@ import java.util.List;
  * based on current utilization and skill requirements.
  */
 @RestController
-@RequestMapping({"/resources", "/api/resources"})
+@RequestMapping("/api/resources")
 public class ResourceController {
 
     private final EmployeeService employeeService;

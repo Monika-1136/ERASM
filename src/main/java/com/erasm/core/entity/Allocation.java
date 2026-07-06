@@ -93,6 +93,18 @@ public class Allocation {
         return endDate;
     }
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "request_id")
+    private ResourceRequest resourceRequest;
+
+    @org.hibernate.annotations.CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.time.LocalDateTime createdAt;
+
+    @org.hibernate.annotations.UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private java.time.LocalDateTime updatedAt;
+
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
@@ -103,5 +115,29 @@ public class Allocation {
 
     public void setStatus(AllocationStatus status) {
         this.status = status;
+    }
+
+    public ResourceRequest getResourceRequest() {
+        return resourceRequest;
+    }
+
+    public void setResourceRequest(ResourceRequest resourceRequest) {
+        this.resourceRequest = resourceRequest;
+    }
+
+    public java.time.LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public java.time.LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(java.time.LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

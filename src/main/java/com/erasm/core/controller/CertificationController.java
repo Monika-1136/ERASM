@@ -1,10 +1,13 @@
 package com.erasm.core.controller;
 
+import com.erasm.core.dto.request.CertificationRequest;
 import com.erasm.core.dto.response.ApiResponse;
 import com.erasm.core.dto.response.CertificationResponse;
 import com.erasm.core.entity.Certification;
 import com.erasm.core.repository.CertificationRepository;
 import com.erasm.core.service.EmployeeService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping({"/certifications", "/api/certifications"})
+@RequestMapping("/api/certifications")
 public class CertificationController {
 
     private final CertificationRepository certificationRepository;
@@ -22,6 +25,14 @@ public class CertificationController {
     public CertificationController(CertificationRepository certificationRepository, EmployeeService employeeService) {
         this.certificationRepository = certificationRepository;
         this.employeeService = employeeService;
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    public ResponseEntity<ApiResponse<CertificationResponse>> addCertification(@Valid @RequestBody CertificationRequest request) {
+        CertificationResponse response = employeeService.addCertification(request.getEmployeeId(), request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Certification added successfully", response));
     }
 
     @GetMapping("/employee/{employeeId}")

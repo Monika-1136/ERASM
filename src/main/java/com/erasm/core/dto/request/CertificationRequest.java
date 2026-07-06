@@ -5,6 +5,9 @@ import java.time.LocalDate;
 
 public class CertificationRequest {
 
+    @jakarta.validation.constraints.NotNull(message = "Employee ID is required")
+    private Long employeeId;
+
     @NotBlank(message = "Certification name is required")
     private String certificationName;
 
@@ -22,6 +25,22 @@ public class CertificationRequest {
         this.issuingOrganization = issuingOrganization;
         this.issueDate = issueDate;
         this.expiryDate = expiryDate;
+    }
+
+    public CertificationRequest(Long employeeId, String certificationName, String issuingOrganization, LocalDate issueDate, LocalDate expiryDate) {
+        this.employeeId = employeeId;
+        this.certificationName = certificationName;
+        this.issuingOrganization = issuingOrganization;
+        this.issueDate = issueDate;
+        this.expiryDate = expiryDate;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
     }
 
     public String getCertificationName() {

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/resource-requests", "/api/resource-requests"})
+@RequestMapping("/api/resource-requests")
 public class ResourceRequestController {
 
     private final ResourceRequestService resourceRequestService;
@@ -52,7 +52,7 @@ public class ResourceRequestController {
         return ResponseEntity.ok(ApiResponse.success("Resource requests for project fetched successfully", response));
     }
 
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'RESOURCE_MANAGER')")
     public ResponseEntity<ApiResponse<ResourceRequestResponse>> updateRequestStatus(
             @PathVariable Long id,

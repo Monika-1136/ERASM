@@ -64,7 +64,7 @@ public class ProjectControllerTest {
     void testCreateProject_Success() throws Exception {
         when(projectService.createProject(any(ProjectRequest.class))).thenReturn(projectResponse);
 
-        mockMvc.perform(post("/projects")
+        mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(projectRequest)))
                 .andExpect(status().isCreated())
@@ -78,7 +78,7 @@ public class ProjectControllerTest {
     void testGetProjectById_Success() throws Exception {
         when(projectService.getProjectById(1L)).thenReturn(projectResponse);
 
-        mockMvc.perform(get("/projects/1"))
+        mockMvc.perform(get("/api/projects/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.projectId").value(1L));
@@ -88,7 +88,7 @@ public class ProjectControllerTest {
     void testGetAllProjects_Success() throws Exception {
         when(projectService.getAllProjects()).thenReturn(Collections.singletonList(projectResponse));
 
-        mockMvc.perform(get("/projects"))
+        mockMvc.perform(get("/api/projects"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].projectId").value(1L));
@@ -98,7 +98,7 @@ public class ProjectControllerTest {
     void testUpdateProject_Success() throws Exception {
         when(projectService.updateProject(eq(1L), any(ProjectRequest.class))).thenReturn(projectResponse);
 
-        mockMvc.perform(put("/projects/1")
+        mockMvc.perform(put("/api/projects/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(projectRequest)))
                 .andExpect(status().isOk())
@@ -110,7 +110,7 @@ public class ProjectControllerTest {
     void testCloseProject_Success() throws Exception {
         when(projectService.closeProject(1L)).thenReturn(projectResponse);
 
-        mockMvc.perform(put("/projects/1/close"))
+        mockMvc.perform(patch("/api/projects/1/close"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
@@ -119,7 +119,7 @@ public class ProjectControllerTest {
     void testDeleteProject_Success() throws Exception {
         doNothing().when(projectService).deleteProject(1L);
 
-        mockMvc.perform(delete("/projects/1"))
+        mockMvc.perform(delete("/api/projects/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }

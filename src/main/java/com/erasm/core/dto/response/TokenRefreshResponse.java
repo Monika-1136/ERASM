@@ -5,6 +5,7 @@ public class TokenRefreshResponse {
     private String accessToken;
     private String refreshToken;
     private String tokenType = "Bearer";
+    private Long expiresIn;
 
     public TokenRefreshResponse() {
     }
@@ -12,6 +13,13 @@ public class TokenRefreshResponse {
     public TokenRefreshResponse(String accessToken, String refreshToken) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.expiresIn = 86400000L; // default 24h
+    }
+
+    public TokenRefreshResponse(String accessToken, String refreshToken, Long expiresIn) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.expiresIn = expiresIn;
     }
 
     public String getAccessToken() {
@@ -36,5 +44,13 @@ public class TokenRefreshResponse {
 
     public void setTokenType(String tokenType) {
         this.tokenType = tokenType;
+    }
+
+    public Long getExpiresIn() {
+        return expiresIn;
+    }
+
+    public void setExpiresIn(Long expiresIn) {
+        this.expiresIn = expiresIn;
     }
 }

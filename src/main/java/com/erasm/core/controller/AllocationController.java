@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/allocations", "/api/allocations"})
+@RequestMapping("/api/allocations")
 public class AllocationController {
 
     private final AllocationService allocationService;
@@ -55,14 +55,21 @@ public class AllocationController {
         return ResponseEntity.ok(ApiResponse.success("Employee reallocated successfully", response));
     }
 
-    @PutMapping("/{id}/release")
+    @PatchMapping("/{id}/release")
     @PreAuthorize("hasAnyRole('ADMIN', 'RESOURCE_MANAGER')")
     public ResponseEntity<ApiResponse<AllocationResponse>> releaseEmployee(@PathVariable Long id) {
         AllocationResponse response = allocationService.releaseEmployee(id);
         return ResponseEntity.ok(ApiResponse.success("Employee released successfully", response));
     }
 
-    @PutMapping("/{id}/status")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'RESOURCE_MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> deleteAllocation(@PathVariable Long id) {
+        allocationService.deleteAllocation(id);
+        return ResponseEntity.ok(ApiResponse.success("Allocation deleted successfully"));
+    }
+
+    @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'RESOURCE_MANAGER')")
     public ResponseEntity<ApiResponse<AllocationResponse>> updateAllocationStatus(
             @PathVariable Long id,

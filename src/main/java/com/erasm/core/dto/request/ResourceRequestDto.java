@@ -2,35 +2,32 @@ package com.erasm.core.dto.request;
 
 import com.erasm.core.enums.RequestStatus;
 import com.erasm.core.enums.SkillLevel;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResourceRequestDto {
 
     @NotNull(message = "Project ID is required")
     private Long projectId;
 
-    @NotNull(message = "Skill ID is required")
-    private Long skillId;
-
-    @NotNull(message = "Required count is mandatory")
-    @Min(value = 1, message = "Required count must be at least 1")
-    private Integer requiredCount;
-
-    @NotNull(message = "Required level is mandatory")
-    private SkillLevel requiredLevel;
+    @NotEmpty(message = "At least one skill requirement is required")
+    private List<@Valid RequestSkillDto> skills = new ArrayList<>();
 
     private RequestStatus status;
+
+    private String remarks;
 
     public ResourceRequestDto() {
     }
 
-    public ResourceRequestDto(Long projectId, Long skillId, Integer requiredCount, SkillLevel requiredLevel, RequestStatus status) {
+    public ResourceRequestDto(Long projectId, List<RequestSkillDto> skills, RequestStatus status, String remarks) {
         this.projectId = projectId;
-        this.skillId = skillId;
-        this.requiredCount = requiredCount;
-        this.requiredLevel = requiredLevel;
+        this.skills = skills;
         this.status = status;
+        this.remarks = remarks;
     }
 
     public Long getProjectId() {
@@ -41,28 +38,12 @@ public class ResourceRequestDto {
         this.projectId = projectId;
     }
 
-    public Long getSkillId() {
-        return skillId;
+    public List<RequestSkillDto> getSkills() {
+        return skills;
     }
 
-    public void setSkillId(Long skillId) {
-        this.skillId = skillId;
-    }
-
-    public Integer getRequiredCount() {
-        return requiredCount;
-    }
-
-    public void setRequiredCount(Integer requiredCount) {
-        this.requiredCount = requiredCount;
-    }
-
-    public SkillLevel getRequiredLevel() {
-        return requiredLevel;
-    }
-
-    public void setRequiredLevel(SkillLevel requiredLevel) {
-        this.requiredLevel = requiredLevel;
+    public void setSkills(List<RequestSkillDto> skills) {
+        this.skills = skills;
     }
 
     public RequestStatus getStatus() {
@@ -71,5 +52,50 @@ public class ResourceRequestDto {
 
     public void setStatus(RequestStatus status) {
         this.status = status;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    // Legacy support methods for compatibility
+    public Long getSkillId() {
+        return (skills != null && !skills.isEmpty()) ? skills.get(0).getSkillId() : null;
+    }
+
+    public void setSkillId(Long skillId) {
+        ensureFirstSkillExist();
+        skills.get(0).setSkillId(skillId);
+    }
+
+    public Integer getRequiredCount() {
+        return (skills != null && !skills.isEmpty()) ? skills.get(0).getRequiredCount() : null;
+    }
+
+    public void setRequiredCount(Integer requiredCount) {
+        ensureFirstSkillExist();
+        skills.get(0).setRequiredCount(requiredCount);
+    }
+
+    public SkillLevel getRequiredLevel() {
+        return (skills != null && !skills.isEmpty()) ? skills.get(0).getRequiredLevel() : null;
+    }
+
+    public void setRequiredLevel(SkillLevel requiredLevel) {
+        ensureFirstSkillExist();
+        skills.get(0).setRequiredLevel(requiredLevel);
+    }
+
+    private void ensureFirstSkillExist() {
+        if (skills == null) {
+            skills = new ArrayList<>();
+        }
+        if (skills.isEmpty()) {
+            skills.add(new RequestSkillDto());
+        }
     }
 }

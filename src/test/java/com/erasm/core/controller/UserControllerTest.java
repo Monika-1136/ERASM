@@ -55,13 +55,13 @@ public class UserControllerTest {
         userResponse.setRole("ADMIN");
     }
 
-    // ========================= POST /users =========================
+    // ========================= POST /api/users =========================
 
     @Test
     void testCreateUser_Success() throws Exception {
         when(userService.createUser(any(UserRequest.class))).thenReturn(userResponse);
         String json = "{\"fullName\":\"John Admin\",\"email\":\"admin@erasm.com\",\"password\":\"Admin@123\",\"roleId\":1}";
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("User created successfully"))
@@ -70,12 +70,12 @@ public class UserControllerTest {
         verify(userService).createUser(any(UserRequest.class));
     }
 
-    // ========================= GET /users/{id} =========================
+    // ========================= GET /api/users/{id} =========================
 
     @Test
     void testGetUserById_Success() throws Exception {
         when(userService.getUserById(1L)).thenReturn(userResponse);
-        mockMvc.perform(get("/users/1"))
+        mockMvc.perform(get("/api/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.userId").value(1L))
@@ -86,12 +86,12 @@ public class UserControllerTest {
     @Test
     void testGetUserById_NotFound() throws Exception {
         when(userService.getUserById(99L)).thenThrow(new UserNotFoundException("User not found with ID: 99"));
-        mockMvc.perform(get("/users/99"))
+        mockMvc.perform(get("/api/users/99"))
                 .andExpect(status().isNotFound());
         verify(userService).getUserById(99L);
     }
 
-    // ========================= GET /users =========================
+    // ========================= GET /api/users =========================
 
     @Test
     void testGetAllUsers_Success() throws Exception {
@@ -101,7 +101,7 @@ public class UserControllerTest {
         user2.setEmail("manager@erasm.com");
         user2.setRole("RESOURCE_MANAGER");
         when(userService.getAllUsers()).thenReturn(Arrays.asList(userResponse, user2));
-        mockMvc.perform(get("/users"))
+        mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2))
@@ -113,12 +113,12 @@ public class UserControllerTest {
     @Test
     void testGetAllUsers_Empty() throws Exception {
         when(userService.getAllUsers()).thenReturn(Collections.emptyList());
-        mockMvc.perform(get("/users"))
+        mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(0));
     }
 
-    // ========================= PUT /users/{id} =========================
+    // ========================= PUT /api/users/{id} =========================
 
     @Test
     void testUpdateUser_Success() throws Exception {
@@ -129,7 +129,7 @@ public class UserControllerTest {
         updated.setRole("ADMIN");
         when(userService.updateUser(eq(1L), any(UserRequest.class))).thenReturn(updated);
         String json = "{\"fullName\":\"John Updated\",\"email\":\"admin@erasm.com\",\"password\":\"NewPass@1\",\"roleId\":1}";
-        mockMvc.perform(put("/users/1").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(put("/api/users/1").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.fullName").value("John Updated"));
@@ -141,16 +141,16 @@ public class UserControllerTest {
         when(userService.updateUser(eq(99L), any(UserRequest.class)))
                 .thenThrow(new UserNotFoundException("User not found with ID: 99"));
         String json = "{\"fullName\":\"Nobody\",\"email\":\"nobody@erasm.com\",\"password\":\"Pass@1234\",\"roleId\":1}";
-        mockMvc.perform(put("/users/99").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(put("/api/users/99").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isNotFound());
     }
 
-    // ========================= DELETE /users/{id} =========================
+    // ========================= DELETE /api/users/{id} =========================
 
     @Test
     void testDeleteUser_Success() throws Exception {
         doNothing().when(userService).deleteUser(1L);
-        mockMvc.perform(delete("/users/1"))
+        mockMvc.perform(delete("/api/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("User deleted successfully"));
@@ -160,17 +160,17 @@ public class UserControllerTest {
     @Test
     void testDeleteUser_NotFound() throws Exception {
         doThrow(new UserNotFoundException("User not found with ID: 99")).when(userService).deleteUser(99L);
-        mockMvc.perform(delete("/users/99"))
+        mockMvc.perform(delete("/api/users/99"))
                 .andExpect(status().isNotFound());
     }
 
-    // ========================= POST /users/{id}/change-password =========================
+    // ========================= PUT /api/users/{id}/change-password =========================
 
     @Test
     void testChangePassword_Success() throws Exception {
         doNothing().when(userService).changePassword(eq(1L), any(ChangePasswordRequest.class));
         String json = "{\"oldPassword\":\"OldPass@1\",\"newPassword\":\"NewPass@1\"}";
-        mockMvc.perform(post("/users/1/change-password").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(put("/api/users/1/change-password").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Password changed successfully"));
@@ -182,7 +182,7 @@ public class UserControllerTest {
         doThrow(new UserNotFoundException("User not found with ID: 99"))
                 .when(userService).changePassword(eq(99L), any(ChangePasswordRequest.class));
         String json = "{\"oldPassword\":\"OldPass@1\",\"newPassword\":\"NewPass@1\"}";
-        mockMvc.perform(post("/users/99/change-password").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(put("/api/users/99/change-password").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isNotFound());
     }
 }

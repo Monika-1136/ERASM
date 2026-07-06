@@ -56,7 +56,7 @@ public class ResourceControllerTest {
         when(employeeService.getAvailableEmployees(null, null, null, 100.0))
                 .thenReturn(Arrays.asList(employee1, employee2));
 
-        mockMvc.perform(get("/resources/available"))
+        mockMvc.perform(get("/api/resources/available"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2))
@@ -70,7 +70,7 @@ public class ResourceControllerTest {
         when(employeeService.getAvailableEmployees(5L, null, null, 100.0))
                 .thenReturn(Collections.singletonList(employee1));
 
-        mockMvc.perform(get("/resources/available").param("skillId", "5"))
+        mockMvc.perform(get("/api/resources/available").param("skillId", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(1))
@@ -84,7 +84,7 @@ public class ResourceControllerTest {
         when(employeeService.getAvailableEmployees(null, null, null, 50.0))
                 .thenReturn(Arrays.asList(employee1, employee2));
 
-        mockMvc.perform(get("/resources/available").param("maxAllocation", "50"))
+        mockMvc.perform(get("/api/resources/available").param("maxAllocation", "50"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(2));
 
@@ -96,7 +96,7 @@ public class ResourceControllerTest {
         when(employeeService.getAvailableEmployees(3L, null, null, 80.0))
                 .thenReturn(Collections.singletonList(employee2));
 
-        mockMvc.perform(get("/resources/available")
+        mockMvc.perform(get("/api/resources/available")
                         .param("skillId", "3")
                         .param("maxAllocation", "80"))
                 .andExpect(status().isOk())
@@ -110,7 +110,7 @@ public class ResourceControllerTest {
         when(employeeService.getAvailableEmployees(null, null, null, 100.0))
                 .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/resources/available"))
+        mockMvc.perform(get("/api/resources/available"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(0));
     }

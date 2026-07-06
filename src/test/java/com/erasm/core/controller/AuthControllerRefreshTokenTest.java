@@ -45,7 +45,7 @@ public class AuthControllerRefreshTokenTest {
 
         when(authService.refreshToken(any(RefreshTokenRequest.class))).thenReturn(mockResponse);
 
-        mockMvc.perform(post("/auth/refresh")
+        mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -63,7 +63,7 @@ public class AuthControllerRefreshTokenTest {
         doNothing().when(authService).logout("valid-access-token");
         doNothing().when(authService).logoutWithRefreshToken("valid-refresh-token");
 
-        mockMvc.perform(post("/auth/logout")
+        mockMvc.perform(post("/api/auth/logout")
                         .header("Authorization", "Bearer valid-access-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

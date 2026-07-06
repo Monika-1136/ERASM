@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/projects", "/api/projects"})
+@RequestMapping("/api/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -46,7 +46,7 @@ public class ProjectController {
         return ResponseEntity.ok(ApiResponse.success("Project updated successfully", projectService.updateProject(id, request)));
     }
 
-    @PutMapping("/{id}/close")
+    @PatchMapping("/{id}/close")
     @PreAuthorize("hasAnyRole('ADMIN', 'DELIVERY_MANAGER')")
     public ResponseEntity<ApiResponse<ProjectResponse>> closeProject(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success("Project closed successfully and active allocations released", projectService.closeProject(id)));

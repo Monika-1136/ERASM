@@ -1,9 +1,11 @@
 package com.erasm.core.service.impl;
 
 import com.erasm.core.dto.request.ResourceRequestDto;
+import com.erasm.core.dto.request.RequestSkillDto;
 import com.erasm.core.dto.response.ResourceRequestResponse;
 import com.erasm.core.entity.Project;
 import com.erasm.core.entity.ResourceRequest;
+import com.erasm.core.entity.RequestSkill;
 import com.erasm.core.entity.Skill;
 import com.erasm.core.enums.RequestStatus;
 import com.erasm.core.exception.ProjectNotFoundException;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,20 +58,34 @@ public class ResourceRequestServiceImpl implements ResourceRequestService {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new ProjectNotFoundException("Project not found with ID: " + request.getProjectId()));
 
-        Skill skill = skillRepository.findById(request.getSkillId())
-                .orElseThrow(() -> new SkillNotFoundException("Skill not found with ID: " + request.getSkillId()));
-
         ResourceRequest resourceRequest = new ResourceRequest();
         resourceRequest.setProject(project);
-        resourceRequest.setSkill(skill);
-        resourceRequest.setRequiredCount(request.getRequiredCount());
-        resourceRequest.setRequiredLevel(request.getRequiredLevel());
         resourceRequest.setStatus(request.getStatus() != null ? request.getStatus() : RequestStatus.SUBMITTED);
         resourceRequest.setRequestedBy("DELIVERY_MANAGER");
-        resourceRequest.setCreatedDate(LocalDate.now());
+        resourceRequest.setRequestDate(LocalDate.now());
+        resourceRequest.setRemarks(request.getRemarks());
+
+        List<RequestSkill> requestSkills = new ArrayList<>();
+        if (request.getSkills() != null) {
+            for (RequestSkillDto skillDto : request.getSkills()) {
+                Skill skill = skillRepository.findById(skillDto.getSkillId())
+                        .orElseThrow(() -> new SkillNotFoundException("Skill not found with ID: " + skillDto.getSkillId()));
+                
+                RequestSkill requestSkill = new RequestSkill();
+                requestSkill.setResourceRequest(resourceRequest);
+                requestSkill.setSkill(skill);
+                requestSkill.setRequiredCount(skillDto.getRequiredCount());
+                requestSkill.setRequiredLevel(skillDto.getRequiredLevel());
+                requestSkills.add(requestSkill);
+            }
+        }
+        resourceRequest.setRequestSkills(requestSkills);
 
         ResourceRequest saved = resourceRequestRepository.save(resourceRequest);
-        auditService.logAction("CREATE_RESOURCE_REQUEST", "ResourceRequest", saved.getRequestId(), "DELIVERY_MANAGER", "Requested " + saved.getRequiredCount() + " " + skill.getSkillName() + " devs");
+        
+        // Log action in AuditLog
+        auditService.logAction("CREATE_RESOURCE_REQUEST", "ResourceRequest", saved.getRequestId(), "DELIVERY_MANAGER", "Requested skills for project: " + project.getProjectName());
+        
         return resourceRequestMapper.toResponse(saved);
     }
 
@@ -107,7 +124,10 @@ public class ResourceRequestServiceImpl implements ResourceRequestService {
 
         request.setStatus(status);
         ResourceRequest saved = resourceRequestRepository.save(request);
+        
+        // Log action in AuditLog
         auditService.logAction("UPDATE_REQUEST_STATUS", "ResourceRequest", saved.getRequestId(), "RESOURCE_MANAGER", "Updated status to " + status);
+        
         return resourceRequestMapper.toResponse(saved);
     }
 
@@ -121,10 +141,10 @@ public class ResourceRequestServiceImpl implements ResourceRequestService {
                 if (target == RequestStatus.SUBMITTED) valid = true;
                 break;
             case SUBMITTED:
-                if (target == RequestStatus.UNDER_REVIEW) valid = true;
+                if (target == RequestStatus.RESOURCE_MANAGER_REVIEW) valid = true;
                 break;
-            case UNDER_REVIEW:
-                if (target == RequestStatus.APPROVED || target == RequestStatus.REJECTED) valid = true;
+            case RESOURCE_MANAGER_REVIEW:
+                if (target == RequestStatus.APPROVED) valid = true;
                 break;
             case APPROVED:
                 if (target == RequestStatus.ALLOCATED) valid = true;

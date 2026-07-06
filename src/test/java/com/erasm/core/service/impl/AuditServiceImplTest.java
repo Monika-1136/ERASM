@@ -44,7 +44,7 @@ public class AuditServiceImplTest {
         auditLog.setTimestamp(LocalDateTime.now());
         auditLog.setDetails("Created project");
 
-        when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(Collections.singletonList(auditLog));
+        when(auditLogRepository.findAllByOrderByCreatedAtDesc()).thenReturn(Collections.singletonList(auditLog));
 
         List<AuditLogResponse> logs = auditService.getAllAuditLogs();
 

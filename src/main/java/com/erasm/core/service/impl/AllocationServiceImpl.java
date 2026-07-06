@@ -165,4 +165,14 @@ public class AllocationServiceImpl implements AllocationService {
                 .map(allocationMapper::toResponse)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public void deleteAllocation(Long allocationId) {
+        logger.info("Deleting allocation ID {}", allocationId);
+        Allocation allocation = allocationRepository.findById(allocationId)
+                .orElseThrow(() -> new AllocationException("Allocation record not found with ID: " + allocationId));
+        allocationRepository.delete(allocation);
+        auditService.logAction("DELETE_ALLOCATION", "Allocation", allocationId, "RESOURCE_MANAGER", "Deleted allocation");
+    }
 }

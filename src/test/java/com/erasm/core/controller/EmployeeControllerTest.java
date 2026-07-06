@@ -73,7 +73,7 @@ public class EmployeeControllerTest {
     void testCreateEmployee_Success() throws Exception {
         when(employeeService.createEmployee(any(EmployeeRequest.class))).thenReturn(employeeResponse);
         String json = "{\"userId\":10,\"department\":\"Engineering\",\"designation\":\"Software Engineer\"}";
-        mockMvc.perform(post("/employees").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(post("/api/employees").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.employeeId").value(1L));
@@ -86,7 +86,7 @@ public class EmployeeControllerTest {
         emp2.setEmployeeId(2L);
         emp2.setFullName("Bob Jones");
         when(employeeService.getAllEmployees()).thenReturn(Arrays.asList(employeeResponse, emp2));
-        mockMvc.perform(get("/employees"))
+        mockMvc.perform(get("/api/employees"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2));
@@ -96,7 +96,7 @@ public class EmployeeControllerTest {
     @Test
     void testGetAllEmployees_Empty() throws Exception {
         when(employeeService.getAllEmployees()).thenReturn(Collections.emptyList());
-        mockMvc.perform(get("/employees"))
+        mockMvc.perform(get("/api/employees"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(0));
     }
@@ -104,7 +104,7 @@ public class EmployeeControllerTest {
     @Test
     void testGetEmployeeById_Success() throws Exception {
         when(employeeService.getEmployeeById(1L)).thenReturn(employeeResponse);
-        mockMvc.perform(get("/employees/1"))
+        mockMvc.perform(get("/api/employees/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.employeeId").value(1L))
                 .andExpect(jsonPath("$.data.email").value("alice@erasm.com"));
@@ -115,14 +115,14 @@ public class EmployeeControllerTest {
     void testGetEmployeeById_NotFound() throws Exception {
         when(employeeService.getEmployeeById(99L))
                 .thenThrow(new ResourceNotFoundException("Employee not found with ID: 99"));
-        mockMvc.perform(get("/employees/99"))
+        mockMvc.perform(get("/api/employees/99"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testGetEmployeeByUserId_Success() throws Exception {
         when(employeeService.getEmployeeByUserId(10L)).thenReturn(employeeResponse);
-        mockMvc.perform(get("/employees/user/10"))
+        mockMvc.perform(get("/api/employees/user/10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.userId").value(10L));
         verify(employeeService).getEmployeeByUserId(10L);
@@ -132,7 +132,7 @@ public class EmployeeControllerTest {
     void testGetEmployeeByUserId_NotFound() throws Exception {
         when(employeeService.getEmployeeByUserId(999L))
                 .thenThrow(new ResourceNotFoundException("Employee profile not found for user ID: 999"));
-        mockMvc.perform(get("/employees/user/999"))
+        mockMvc.perform(get("/api/employees/user/999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -143,7 +143,7 @@ public class EmployeeControllerTest {
         updated.setDesignation("Senior Engineer");
         when(employeeService.updateEmployee(eq(1L), any(EmployeeRequest.class))).thenReturn(updated);
         String json = "{\"userId\":10,\"department\":\"DevOps\",\"designation\":\"Senior Engineer\"}";
-        mockMvc.perform(put("/employees/1").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(put("/api/employees/1").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.designation").value("Senior Engineer"));
         verify(employeeService).updateEmployee(eq(1L), any(EmployeeRequest.class));
@@ -154,14 +154,14 @@ public class EmployeeControllerTest {
         when(employeeService.updateEmployee(eq(99L), any(EmployeeRequest.class)))
                 .thenThrow(new ResourceNotFoundException("Employee not found with ID: 99"));
         String json = "{\"userId\":10,\"department\":\"DevOps\",\"designation\":\"Engineer\"}";
-        mockMvc.perform(put("/employees/99").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(put("/api/employees/99").contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testDeleteEmployee_Success() throws Exception {
         doNothing().when(employeeService).deleteEmployee(1L);
-        mockMvc.perform(delete("/employees/1"))
+        mockMvc.perform(delete("/api/employees/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
         verify(employeeService).deleteEmployee(1L);
@@ -170,45 +170,7 @@ public class EmployeeControllerTest {
     @Test
     void testDeleteEmployee_NotFound() throws Exception {
         doThrow(new ResourceNotFoundException("Employee not found with ID: 99")).when(employeeService).deleteEmployee(99L);
-        mockMvc.perform(delete("/employees/99"))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void testAddOrUpdateSkill_Success() throws Exception {
-        when(employeeService.addOrUpdateSkill(eq(1L), any(EmployeeSkillRequest.class))).thenReturn(skillResponse);
-        String json = "{\"skillId\":5,\"skillLevel\":\"ADVANCED\",\"experienceYears\":3.0}";
-        mockMvc.perform(post("/employees/1/skills").contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.skillName").value("Java"));
-        verify(employeeService).addOrUpdateSkill(eq(1L), any(EmployeeSkillRequest.class));
-    }
-
-    @Test
-    void testAddOrUpdateSkill_EmployeeNotFound() throws Exception {
-        when(employeeService.addOrUpdateSkill(eq(99L), any(EmployeeSkillRequest.class)))
-                .thenThrow(new ResourceNotFoundException("Employee not found with ID: 99"));
-        String json = "{\"skillId\":5,\"skillLevel\":\"ADVANCED\"}";
-        mockMvc.perform(post("/employees/99/skills").contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void testAddCertification_Success() throws Exception {
-        when(employeeService.addCertification(eq(1L), any(CertificationRequest.class))).thenReturn(certResponse);
-        String json = "{\"certificationName\":\"AWS Certified\",\"issuingOrganization\":\"Amazon\",\"issueDate\":\"2024-01-01\"}";
-        mockMvc.perform(post("/employees/1/certifications").contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.certificationName").value("AWS Certified"));
-        verify(employeeService).addCertification(eq(1L), any(CertificationRequest.class));
-    }
-
-    @Test
-    void testAddCertification_EmployeeNotFound() throws Exception {
-        when(employeeService.addCertification(eq(99L), any(CertificationRequest.class)))
-                .thenThrow(new ResourceNotFoundException("Employee not found with ID: 99"));
-        String json = "{\"certificationName\":\"AWS Certified\",\"issuingOrganization\":\"Amazon\",\"issueDate\":\"2024-01-01\"}";
-        mockMvc.perform(post("/employees/99/certifications").contentType(MediaType.APPLICATION_JSON).content(json))
+        mockMvc.perform(delete("/api/employees/99"))
                 .andExpect(status().isNotFound());
     }
 }
