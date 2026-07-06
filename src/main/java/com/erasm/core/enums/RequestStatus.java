@@ -3,9 +3,8 @@ package com.erasm.core.enums;
 public enum RequestStatus {
     DRAFT,
     SUBMITTED,
-    UNDER_REVIEW,
+    RESOURCE_MANAGER_REVIEW,
     APPROVED,
-    REJECTED,
     ALLOCATED,
     COMPLETED
 }

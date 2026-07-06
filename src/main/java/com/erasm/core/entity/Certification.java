@@ -73,6 +73,9 @@ public class Certification {
         this.issuingOrganization = issuingOrganization;
     }
 
+    @Column(name = "credential_id")
+    private String credentialId;
+
     public LocalDate getIssueDate() {
         return issueDate;
     }
@@ -87,5 +90,13 @@ public class Certification {
 
     public void setExpiryDate(LocalDate expiryDate) {
         this.expiryDate = expiryDate;
+    }
+
+    public String getCredentialId() {
+        return credentialId;
+    }
+
+    public void setCredentialId(String credentialId) {
+        this.credentialId = credentialId;
     }
 }

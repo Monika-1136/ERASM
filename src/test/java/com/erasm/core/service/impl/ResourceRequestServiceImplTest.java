@@ -22,7 +22,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -169,7 +168,7 @@ public class ResourceRequestServiceImplTest {
 
     @Test
     void testUpdateRequestStatus_Success() {
-        resourceRequest.setStatus(RequestStatus.UNDER_REVIEW);
+        resourceRequest.setStatus(RequestStatus.RESOURCE_MANAGER_REVIEW);
         when(resourceRequestRepository.findById(100L)).thenReturn(Optional.of(resourceRequest));
         when(resourceRequestRepository.save(any(ResourceRequest.class))).thenReturn(resourceRequest);
         
@@ -219,15 +218,15 @@ public class ResourceRequestServiceImplTest {
     }
 
     @Test
-    void testUpdateRequestStatus_UnderReviewToRejected() {
-        resourceRequest.setStatus(RequestStatus.UNDER_REVIEW);
+    void testUpdateRequestStatus_ResourceManagerReviewToApproved() {
+        resourceRequest.setStatus(RequestStatus.RESOURCE_MANAGER_REVIEW);
         when(resourceRequestRepository.findById(100L)).thenReturn(Optional.of(resourceRequest));
         when(resourceRequestRepository.save(any(ResourceRequest.class))).thenReturn(resourceRequest);
 
         ResourceRequestResponse mockResponse = new ResourceRequestResponse();
         when(resourceRequestMapper.toResponse(any())).thenReturn(mockResponse);
 
-        assertDoesNotThrow(() -> resourceRequestService.updateRequestStatus(100L, RequestStatus.REJECTED));
+        assertDoesNotThrow(() -> resourceRequestService.updateRequestStatus(100L, RequestStatus.APPROVED));
     }
 
     @Test

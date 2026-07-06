@@ -77,11 +77,18 @@ public class AuthServiceImpl implements AuthService {
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
-        logger.info("User login successful for email: {}", request.getEmail());
-        auditService.logAction("LOGIN_SUCCESS", "User", user.getUserId(), user.getEmail(), "User logged in successfully");
-
         String roleName = user.getRole() != null ? user.getRole().getRoleName().name() : "";
-        return new JwtResponse(jwt, refreshToken.getToken(), user.getUserId(), user.getEmail(), roleName);
+        JwtResponse.UserDetails userDetails = new JwtResponse.UserDetails(
+                user.getUserId(),
+                user.getFullName(),
+                user.getEmail(),
+                roleName
+        );
+        
+        // Log login action
+        auditService.logAction(user.getUserId(), "LOGIN", "User", user.getUserId(), null, "Logged in successfully", null);
+        
+        return new JwtResponse(jwt, refreshToken.getToken(), JwtUtil.JWT_TOKEN_VALIDITY_MS, user.getUserId(), user.getEmail(), roleName, userDetails);
     }
 
     @Override
@@ -153,7 +160,7 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenService.revokeToken(requestToken);
         
         logger.info("Successfully refreshed token for user: {}", user.getEmail());
-        return new TokenRefreshResponse(accessToken, newRefreshToken.getToken());
+        return new TokenRefreshResponse(accessToken, newRefreshToken.getToken(), JwtUtil.JWT_TOKEN_VALIDITY_MS);
     }
 
     @Override

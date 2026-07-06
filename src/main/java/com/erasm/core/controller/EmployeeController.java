@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/employees", "/api/employees"})
+@RequestMapping("/api/employees")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -63,18 +63,5 @@ public class EmployeeController {
     public ResponseEntity<ApiResponse<Void>> deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.ok(ApiResponse.success("Employee profile deleted successfully"));
-    }
-
-    @PostMapping("/{id}/skills")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    public ResponseEntity<ApiResponse<EmployeeSkillResponse>> addOrUpdateSkill(@PathVariable Long id, @Valid @RequestBody EmployeeSkillRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Employee skill added/updated successfully", employeeService.addOrUpdateSkill(id, request)));
-    }
-
-    @PostMapping("/{id}/certifications")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    public ResponseEntity<ApiResponse<CertificationResponse>> addCertification(@PathVariable Long id, @Valid @RequestBody CertificationRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Certification added successfully", employeeService.addCertification(id, request)));
     }
 }

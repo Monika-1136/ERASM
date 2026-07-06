@@ -24,11 +24,12 @@
               "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john.doe@erasm.com\",\n  \"password\": \"password123\",\n  \"roleId\": 4\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/register",
+              "raw": "{{baseUrl}}/api/auth/register",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
                 "auth",
                 "register"
               ]
@@ -44,8 +45,9 @@
               "script": {
                 "exec": [
                   "var jsonData = pm.response.json();",
-                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
-                  "    pm.environment.set(\"token\", jsonData.data.token);",
+                  "var token = jsonData.data ? (jsonData.data.accessToken || jsonData.data.token) : null;",
+                  "if (jsonData.success && token) {",
+                  "    pm.environment.set(\"token\", token);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -65,11 +67,12 @@
               "raw": "{\n  \"email\": \"admin@erasm.com\",\n  \"password\": \"admin12345\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/auth/login",
+              "raw": "{{baseUrl}}/api/auth/login",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
                 "auth",
                 "login"
               ]
@@ -92,11 +95,12 @@
             },
             "method": "POST",
             "url": {
-              "raw": "{{baseUrl}}/auth/logout",
+              "raw": "{{baseUrl}}/api/auth/logout",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
                 "auth",
                 "logout"
               ]
@@ -186,7 +190,7 @@
                 }
               ]
             },
-            "method": "POST",
+            "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
@@ -207,6 +211,141 @@
                 "users",
                 "1",
                 "change-password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Get All Roles",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"ROLE_RESOURCE_MANAGER\",\n  \"description\": \"Manages resource allocations\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"ROLE_RESOURCE_MANAGER\",\n  \"description\": \"Manages resource allocations and approvals\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/roles/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/roles/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles",
+                "1"
               ]
             }
           },
@@ -332,18 +471,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"skillId\": 1,\n  \"skillLevel\": \"ADVANCED\",\n  \"experienceYears\": 3.0\n}"
+              "raw": "{\n  \"employeeId\": 1,\n  \"skillId\": 1,\n  \"skillLevel\": \"ADVANCED\",\n  \"experienceYears\": 3.0\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/employees/1/skills",
+              "raw": "{{baseUrl}}/api/employee-skills",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "employees",
-                "1",
-                "skills"
+                "employee-skills"
               ]
             }
           },
@@ -371,17 +508,15 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"certificationName\": \"Oracle Certified Professional Java SE 17\",\n  \"issuingOrganization\": \"Oracle\",\n  \"issueDate\": \"2025-01-15\",\n  \"expiryDate\": \"2029-01-15\"\n}"
+              "raw": "{\n  \"employeeId\": 1,\n  \"certificationName\": \"Oracle Certified Professional Java SE 17\",\n  \"issuingOrganization\": \"Oracle\",\n  \"issueDate\": \"2025-01-15\",\n  \"expiryDate\": \"2029-01-15\",\n  \"credentialId\": \"OCP-17-99412\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/employees/1/certifications",
+              "raw": "{{baseUrl}}/api/certifications",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "employees",
-                "1",
                 "certifications"
               ]
             }
@@ -470,7 +605,7 @@
                 }
               ]
             },
-            "method": "PUT",
+            "method": "PATCH",
             "url": {
               "raw": "{{baseUrl}}/api/projects/1/close",
               "host": [
@@ -513,7 +648,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"projectId\": 1,\n  \"skillId\": 1,\n  \"requiredCount\": 3,\n  \"requiredLevel\": \"ADVANCED\",\n  \"status\": \"SUBMITTED\"\n}"
+              "raw": "{\n  \"projectId\": 1,\n  \"skills\": [\n    {\n      \"skillId\": 1,\n      \"requiredCount\": 3,\n      \"requiredLevel\": \"ADVANCED\"\n    }\n  ],\n  \"status\": \"SUBMITTED\",\n  \"remarks\": \"Urgent need for senior engineers\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/resource-requests",
@@ -568,7 +703,7 @@
                 }
               ]
             },
-            "method": "PUT",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
@@ -696,6 +831,34 @@
               "path": [
                 "api",
                 "allocations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Allocation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/allocations/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "allocations",
+                "1"
               ]
             }
           },
@@ -879,13 +1042,13 @@
             },
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/api/audits",
+              "raw": "{{baseUrl}}/api/audit-logs",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "audits"
+                "audit-logs"
               ]
             }
           },

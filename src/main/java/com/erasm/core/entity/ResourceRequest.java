@@ -19,16 +19,8 @@ public class ResourceRequest {
     @JsonIgnoreProperties({"resourceRequests", "allocations"})
     private Project project;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "skill_id", nullable = false)
-    private Skill skill;
-
-    @Column(nullable = false)
-    private Integer requiredCount;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SkillLevel requiredLevel;
+    @OneToMany(mappedBy = "resourceRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<RequestSkill> requestSkills = new java.util.ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -37,21 +29,22 @@ public class ResourceRequest {
     @Column
     private String requestedBy;
 
-    @Column(name = "created_date")
-    private LocalDate createdDate;
+    @Column(name = "request_date")
+    private LocalDate requestDate;
+
+    @Column
+    private String remarks;
 
     public ResourceRequest() {
     }
 
-    public ResourceRequest(Long requestId, Project project, Skill skill, Integer requiredCount, SkillLevel requiredLevel, RequestStatus status, String requestedBy, LocalDate createdDate) {
+    public ResourceRequest(Long requestId, Project project, RequestStatus status, String requestedBy, LocalDate requestDate, String remarks) {
         this.requestId = requestId;
         this.project = project;
-        this.skill = skill;
-        this.requiredCount = requiredCount;
-        this.requiredLevel = requiredLevel;
         this.status = status;
         this.requestedBy = requestedBy;
-        this.createdDate = createdDate;
+        this.requestDate = requestDate;
+        this.remarks = remarks;
     }
 
     public Long getRequestId() {
@@ -70,28 +63,17 @@ public class ResourceRequest {
         this.project = project;
     }
 
-    public Skill getSkill() {
-        return skill;
+    public java.util.List<RequestSkill> getRequestSkills() {
+        return requestSkills;
     }
 
-    public void setSkill(Skill skill) {
-        this.skill = skill;
-    }
-
-    public Integer getRequiredCount() {
-        return requiredCount;
-    }
-
-    public void setRequiredCount(Integer requiredCount) {
-        this.requiredCount = requiredCount;
-    }
-
-    public SkillLevel getRequiredLevel() {
-        return requiredLevel;
-    }
-
-    public void setRequiredLevel(SkillLevel requiredLevel) {
-        this.requiredLevel = requiredLevel;
+    public void setRequestSkills(java.util.List<RequestSkill> requestSkills) {
+        this.requestSkills = requestSkills;
+        if (requestSkills != null) {
+            for (RequestSkill rs : requestSkills) {
+                rs.setResourceRequest(this);
+            }
+        }
     }
 
     public RequestStatus getStatus() {
@@ -110,11 +92,66 @@ public class ResourceRequest {
         this.requestedBy = requestedBy;
     }
 
+    public LocalDate getRequestDate() {
+        return requestDate;
+    }
+
+    public void setRequestDate(LocalDate requestDate) {
+        this.requestDate = requestDate;
+    }
+
     public LocalDate getCreatedDate() {
-        return createdDate;
+        return requestDate;
     }
 
     public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
+        this.requestDate = createdDate;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    // Backward compatibility helper methods
+    public Skill getSkill() {
+        return (requestSkills != null && !requestSkills.isEmpty()) ? requestSkills.get(0).getSkill() : null;
+    }
+
+    public void setSkill(Skill skill) {
+        ensureFirstSkillExist();
+        requestSkills.get(0).setSkill(skill);
+    }
+
+    public Integer getRequiredCount() {
+        return (requestSkills != null && !requestSkills.isEmpty()) ? requestSkills.get(0).getRequiredCount() : null;
+    }
+
+    public void setRequiredCount(Integer requiredCount) {
+        ensureFirstSkillExist();
+        requestSkills.get(0).setRequiredCount(requiredCount);
+    }
+
+    public SkillLevel getRequiredLevel() {
+        return (requestSkills != null && !requestSkills.isEmpty()) ? requestSkills.get(0).getRequiredLevel() : null;
+    }
+
+    public void setRequiredLevel(SkillLevel requiredLevel) {
+        ensureFirstSkillExist();
+        requestSkills.get(0).setRequiredLevel(requiredLevel);
+    }
+
+    private void ensureFirstSkillExist() {
+        if (requestSkills == null) {
+            requestSkills = new java.util.ArrayList<>();
+        }
+        if (requestSkills.isEmpty()) {
+            RequestSkill rs = new RequestSkill();
+            rs.setResourceRequest(this);
+            requestSkills.add(rs);
+        }
     }
 }

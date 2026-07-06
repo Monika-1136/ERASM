@@ -32,22 +32,44 @@ public class AuditServiceImpl implements AuditService {
         auditLog.setEntityName(entityName);
         auditLog.setEntityId(entityId);
         auditLog.setPerformedBy(performedBy != null ? performedBy : "SYSTEM");
-        auditLog.setTimestamp(LocalDateTime.now());
+        auditLog.setCreatedAt(LocalDateTime.now());
         auditLog.setDetails(details);
+        auditLogRepository.save(auditLog);
+    }
+
+    @Override
+    @Transactional
+    public void logAction(Long userId, String action, String entityName, Long entityId, String oldValue, String newValue, String ipAddress) {
+        logger.info("Audit log action: {} on {} (ID: {}) by user ID: {}", action, entityName, entityId, userId);
+        AuditLog auditLog = new AuditLog();
+        auditLog.setUserId(userId);
+        auditLog.setAction(action);
+        auditLog.setEntityName(entityName);
+        auditLog.setEntityId(entityId);
+        auditLog.setOldValue(oldValue);
+        auditLog.setNewValue(newValue);
+        auditLog.setIpAddress(ipAddress != null ? ipAddress : "127.0.0.1");
+        auditLog.setCreatedAt(LocalDateTime.now());
+        auditLog.setPerformedBy("User ID: " + userId);
+        auditLog.setDetails("Action: " + action + " on " + entityName + " (ID: " + entityId + ")");
         auditLogRepository.save(auditLog);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AuditLogResponse> getAllAuditLogs() {
-        return auditLogRepository.findAllByOrderByTimestampDesc().stream()
+        return auditLogRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(log -> new AuditLogResponse(
                         log.getLogId(),
+                        log.getUserId(),
                         log.getAction(),
                         log.getEntityName(),
                         log.getEntityId(),
+                        log.getOldValue(),
+                        log.getNewValue(),
+                        log.getIpAddress(),
+                        log.getCreatedAt(),
                         log.getPerformedBy(),
-                        log.getTimestamp(),
                         log.getDetails()
                 )).collect(Collectors.toList());
     }

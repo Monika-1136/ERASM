@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidWorkflowException.class)
     public ResponseEntity<ApiResponse<Void>> handleInvalidWorkflow(InvalidWorkflowException ex) {
         logger.warn("Invalid workflow transition: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
@@ -94,13 +94,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        String errors = ex.getBindingResult().getFieldErrors().stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining("; "));
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        java.util.Map<String, String> errors = new java.util.HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.put(error.getField(), error.getDefaultMessage());
+        });
         logger.warn("Validation failed for request: {}", errors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Validation failed: " + errors));
+        ApiResponse<java.util.Map<String, String>> response = new ApiResponse<>(false, "Validation failed", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -132,13 +133,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleConstraintViolation(ConstraintViolationException ex) {
-        String errors = ex.getConstraintViolations().stream()
-                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                .collect(Collectors.joining("; "));
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> handleConstraintViolation(ConstraintViolationException ex) {
+        java.util.Map<String, String> errors = new java.util.HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String path = violation.getPropertyPath().toString();
+            String fieldName = path.substring(path.lastIndexOf('.') + 1);
+            errors.put(fieldName, violation.getMessage());
+        });
         logger.warn("Constraint violation: {}", errors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Validation failed: " + errors));
+        ApiResponse<java.util.Map<String, String>> response = new ApiResponse<>(false, "Validation failed", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/users", "/api/users"})
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
@@ -56,7 +56,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully"));
     }
 
-    @PostMapping("/{id}/change-password")
+    @PutMapping("/{id}/change-password")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> changePassword(@PathVariable Long id, @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(id, request);

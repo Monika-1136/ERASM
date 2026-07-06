@@ -61,7 +61,7 @@ public class ResourceRequestControllerTest {
 
         String requestJson = "{\"projectId\":1,\"skillId\":1,\"requiredCount\":3,\"requiredLevel\":\"ADVANCED\",\"status\":\"SUBMITTED\"}";
 
-        mockMvc.perform(post("/resource-requests")
+        mockMvc.perform(post("/api/resource-requests")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -75,7 +75,7 @@ public class ResourceRequestControllerTest {
     void testGetRequestById_Success() throws Exception {
         when(resourceRequestService.getRequestById(1L)).thenReturn(response);
 
-        mockMvc.perform(get("/resource-requests/1"))
+        mockMvc.perform(get("/api/resource-requests/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.requestId").value(1L));
@@ -87,7 +87,7 @@ public class ResourceRequestControllerTest {
     void testGetAllRequests_Success() throws Exception {
         when(resourceRequestService.getAllRequests()).thenReturn(Collections.singletonList(response));
 
-        mockMvc.perform(get("/resource-requests"))
+        mockMvc.perform(get("/api/resource-requests"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].requestId").value(1L));
@@ -99,7 +99,7 @@ public class ResourceRequestControllerTest {
     void testGetRequestsByProject_Success() throws Exception {
         when(resourceRequestService.getRequestsByProject(1L)).thenReturn(Collections.singletonList(response));
 
-        mockMvc.perform(get("/resource-requests/project/1"))
+        mockMvc.perform(get("/api/resource-requests/project/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].requestId").value(1L));
@@ -112,7 +112,7 @@ public class ResourceRequestControllerTest {
         when(resourceRequestService.updateRequestStatus(eq(1L), eq(RequestStatus.APPROVED))).thenReturn(response);
 
         String body = "{\"status\":\"APPROVED\"}";
-        mockMvc.perform(put("/resource-requests/1/status")
+        mockMvc.perform(patch("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -125,7 +125,7 @@ public class ResourceRequestControllerTest {
     @Test
     void testUpdateRequestStatus_NullStatus_ReturnsBadRequest() throws Exception {
         String body = "{\"otherField\":\"value\"}"; // no "status" key
-        mockMvc.perform(put("/resource-requests/1/status")
+        mockMvc.perform(patch("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -137,7 +137,7 @@ public class ResourceRequestControllerTest {
     @Test
     void testUpdateRequestStatus_BlankStatus_ReturnsBadRequest() throws Exception {
         String body = "{\"status\":\"   \"}"; // blank
-        mockMvc.perform(put("/resource-requests/1/status")
+        mockMvc.perform(patch("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -148,7 +148,7 @@ public class ResourceRequestControllerTest {
     @Test
     void testUpdateRequestStatus_InvalidStatusValue_ReturnsBadRequest() throws Exception {
         String body = "{\"status\":\"INVALID_STATUS\"}";
-        mockMvc.perform(put("/resource-requests/1/status")
+        mockMvc.perform(patch("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())

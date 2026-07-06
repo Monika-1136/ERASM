@@ -4,7 +4,6 @@ import com.erasm.core.dto.request.SkillRequest;
 import com.erasm.core.dto.response.SkillResponse;
 import com.erasm.core.exception.SkillNotFoundException;
 import com.erasm.core.service.SkillService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +55,7 @@ public class SkillControllerTest {
         skillResponse.setDescription("Java programming language");
     }
 
-    // ========================= POST /skills =========================
+    // ========================= POST /api/skills =========================
 
     @Test
     void testAddSkill_Success() throws Exception {
@@ -64,7 +63,7 @@ public class SkillControllerTest {
 
         String requestJson = "{\"skillName\":\"Java\",\"category\":\"Backend\",\"description\":\"Java programming language\"}";
 
-        mockMvc.perform(post("/skills")
+        mockMvc.perform(post("/api/skills")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -76,13 +75,13 @@ public class SkillControllerTest {
         verify(skillService).addSkill(any(SkillRequest.class));
     }
 
-    // ========================= GET /skills/{id} =========================
+    // ========================= GET /api/skills/{id} =========================
 
     @Test
     void testGetSkillById_Success() throws Exception {
         when(skillService.getSkillById(1L)).thenReturn(skillResponse);
 
-        mockMvc.perform(get("/skills/1"))
+        mockMvc.perform(get("/api/skills/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.skillId").value(1L))
@@ -95,13 +94,13 @@ public class SkillControllerTest {
     void testGetSkillById_NotFound() throws Exception {
         when(skillService.getSkillById(99L)).thenThrow(new SkillNotFoundException("Skill not found with ID: 99"));
 
-        mockMvc.perform(get("/skills/99"))
+        mockMvc.perform(get("/api/skills/99"))
                 .andExpect(status().isNotFound());
 
         verify(skillService).getSkillById(99L);
     }
 
-    // ========================= GET /skills =========================
+    // ========================= GET /api/skills =========================
 
     @Test
     void testGetAllSkills_Success() throws Exception {
@@ -112,7 +111,7 @@ public class SkillControllerTest {
 
         when(skillService.getAllSkills()).thenReturn(Arrays.asList(skillResponse, skill2));
 
-        mockMvc.perform(get("/skills"))
+        mockMvc.perform(get("/api/skills"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2))
@@ -126,13 +125,13 @@ public class SkillControllerTest {
     void testGetAllSkills_EmptyList() throws Exception {
         when(skillService.getAllSkills()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/skills"))
+        mockMvc.perform(get("/api/skills"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(0));
     }
 
-    // ========================= PUT /skills/{id} =========================
+    // ========================= PUT /api/skills/{id} =========================
 
     @Test
     void testUpdateSkill_Success() throws Exception {
@@ -145,7 +144,7 @@ public class SkillControllerTest {
 
         String requestJson = "{\"skillName\":\"Java Advanced\",\"category\":\"Backend\",\"description\":\"Advanced Java\"}";
 
-        mockMvc.perform(put("/skills/1")
+        mockMvc.perform(put("/api/skills/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isOk())
@@ -162,7 +161,7 @@ public class SkillControllerTest {
 
         String requestJson = "{\"skillName\":\"Java\",\"category\":\"Backend\",\"description\":\"Java\"}";
 
-        mockMvc.perform(put("/skills/99")
+        mockMvc.perform(put("/api/skills/99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound());
@@ -170,13 +169,13 @@ public class SkillControllerTest {
         verify(skillService).updateSkill(eq(99L), any(SkillRequest.class));
     }
 
-    // ========================= DELETE /skills/{id} =========================
+    // ========================= DELETE /api/skills/{id} =========================
 
     @Test
     void testDeleteSkill_Success() throws Exception {
         doNothing().when(skillService).deleteSkill(1L);
 
-        mockMvc.perform(delete("/skills/1"))
+        mockMvc.perform(delete("/api/skills/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Skill deleted successfully"));
@@ -189,7 +188,7 @@ public class SkillControllerTest {
         doThrow(new SkillNotFoundException("Skill not found with ID: 99"))
                 .when(skillService).deleteSkill(99L);
 
-        mockMvc.perform(delete("/skills/99"))
+        mockMvc.perform(delete("/api/skills/99"))
                 .andExpect(status().isNotFound());
 
         verify(skillService).deleteSkill(99L);

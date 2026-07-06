@@ -258,7 +258,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeResponse> getAvailableEmployees(Long skillId, String department, Double minExperience, Double maxAllocation) {
-        logger.info("Fetching available employees with skillId={}, department={}, minExperience={}, maxAllocation={}", 
+        logger.debug("Fetching available employees with skillId={}, department={}, minExperience={}, maxAllocation={}", 
                 skillId, department, minExperience, maxAllocation);
         double threshold = (maxAllocation != null) ? maxAllocation : 100.0;
 

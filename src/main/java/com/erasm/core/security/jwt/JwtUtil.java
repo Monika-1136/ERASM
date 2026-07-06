@@ -18,6 +18,8 @@ public class JwtUtil {
     private static final String SECRET_KEY =
             "VGhpc0lzQVN1cGVyU2VjcmV0S2V5Rm9ySldUVG9rZW5HZW5lcmF0aW9uMTIzNDU2";
 
+    public static final long JWT_TOKEN_VALIDITY_MS = 86400000L;
+
     private Key getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         SecretKey key = Keys.hmacShaKeyFor(keyBytes);
@@ -28,7 +30,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15 minutes
+                .expiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY_MS))
                 .signWith(getSignKey())
                 .compact();
     }

@@ -50,7 +50,7 @@ public class AuditControllerTest {
     void testGetAllAuditLogs_Success() throws Exception {
         when(auditService.getAllAuditLogs()).thenReturn(Collections.singletonList(auditLogResponse));
 
-        mockMvc.perform(get("/audit-logs"))
+        mockMvc.perform(get("/api/audit-logs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].logId").value(1L))

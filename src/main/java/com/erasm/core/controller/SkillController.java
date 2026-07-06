@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/skills", "/api/skills"})
+@RequestMapping("/api/skills")
 public class SkillController {
 
     private final SkillService skillService;

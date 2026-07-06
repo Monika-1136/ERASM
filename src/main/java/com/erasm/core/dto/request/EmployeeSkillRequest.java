@@ -6,6 +6,9 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 public class EmployeeSkillRequest {
 
+    @NotNull(message = "Employee ID is required")
+    private Long employeeId;
+
     @NotNull(message = "Skill ID is required")
     private Long skillId;
 
@@ -22,6 +25,21 @@ public class EmployeeSkillRequest {
         this.skillId = skillId;
         this.skillLevel = skillLevel;
         this.experienceYears = experienceYears;
+    }
+
+    public EmployeeSkillRequest(Long employeeId, Long skillId, SkillLevel skillLevel, Double experienceYears) {
+        this.employeeId = employeeId;
+        this.skillId = skillId;
+        this.skillLevel = skillLevel;
+        this.experienceYears = experienceYears;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
     }
 
     public Long getSkillId() {

@@ -49,7 +49,7 @@ public class AuthControllerTest {
 
         doNothing().when(authService).register(any(RegisterRequest.class));
 
-        mockMvc.perform(post("/auth/register")
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -68,7 +68,7 @@ public class AuthControllerTest {
         JwtResponse jwtResponse = new JwtResponse("dummy-jwt", "dummy-refresh", 10L, "test@erasm.com", "EMPLOYEE");
         when(authService.login(any(LoginRequest.class))).thenReturn(jwtResponse);
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -80,7 +80,7 @@ public class AuthControllerTest {
 
     @Test
     void testLogout_Success() throws Exception {
-        mockMvc.perform(post("/auth/logout")
+        mockMvc.perform(post("/api/auth/logout")
                         .header("Authorization", "Bearer dummy-jwt"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))

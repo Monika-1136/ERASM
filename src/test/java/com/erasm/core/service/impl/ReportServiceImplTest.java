@@ -43,6 +43,7 @@ public class ReportServiceImplTest {
     private AllocationRepository allocationRepository;
 
     @Mock
+    @SuppressWarnings("unused")
     private AllocationMapper allocationMapper;
 
     @Mock

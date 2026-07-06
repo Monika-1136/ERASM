@@ -58,7 +58,7 @@ public class AllocationControllerTest {
 
         String requestJson = "{\"employeeId\":1,\"projectId\":1,\"allocationPercentage\":60.0,\"startDate\":\"2026-06-28\",\"status\":\"ACTIVE\"}";
 
-        mockMvc.perform(post("/allocations")
+        mockMvc.perform(post("/api/allocations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -73,7 +73,7 @@ public class AllocationControllerTest {
         when(allocationService.reallocateEmployee(eq(1L), eq(80.0))).thenReturn(response);
 
         String body = "{\"percentage\":80.0}";
-        mockMvc.perform(put("/allocations/1")
+        mockMvc.perform(put("/api/allocations/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -86,7 +86,7 @@ public class AllocationControllerTest {
     void testReleaseEmployee_Success() throws Exception {
         when(allocationService.releaseEmployee(1L)).thenReturn(response);
 
-        mockMvc.perform(put("/allocations/1/release"))
+        mockMvc.perform(patch("/api/allocations/1/release"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
@@ -98,7 +98,7 @@ public class AllocationControllerTest {
         when(allocationService.updateAllocationStatus(eq(1L), eq(AllocationStatus.ACTIVE))).thenReturn(response);
 
         String body = "{\"status\":\"ACTIVE\"}";
-        mockMvc.perform(put("/allocations/1/status")
+        mockMvc.perform(patch("/api/allocations/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -111,7 +111,7 @@ public class AllocationControllerTest {
     void testGetAllAllocationById_Success() throws Exception {
         when(allocationService.getAllocationById(1L)).thenReturn(response);
 
-        mockMvc.perform(get("/allocations/1"))
+        mockMvc.perform(get("/api/allocations/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.allocationId").value(1L));
@@ -123,7 +123,7 @@ public class AllocationControllerTest {
     void testGetAllAllocations_Success() throws Exception {
         when(allocationService.getAllAllocations()).thenReturn(Collections.singletonList(response));
 
-        mockMvc.perform(get("/allocations"))
+        mockMvc.perform(get("/api/allocations"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].allocationId").value(1L));
@@ -135,7 +135,7 @@ public class AllocationControllerTest {
     void testGetAllocationsByEmployee_Success() throws Exception {
         when(allocationService.getAllocationsByEmployee(1L)).thenReturn(Collections.singletonList(response));
 
-        mockMvc.perform(get("/allocations/employee/1"))
+        mockMvc.perform(get("/api/allocations/employee/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].allocationId").value(1L));
@@ -147,7 +147,7 @@ public class AllocationControllerTest {
     void testGetAllocationsByProject_Success() throws Exception {
         when(allocationService.getAllocationsByProject(1L)).thenReturn(Collections.singletonList(response));
 
-        mockMvc.perform(get("/allocations/project/1"))
+        mockMvc.perform(get("/api/allocations/project/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].allocationId").value(1L));
@@ -158,7 +158,7 @@ public class AllocationControllerTest {
     @Test
     void testReallocateEmployee_MissingPercentageField_ReturnsBadRequest() throws Exception {
         String body = "{\"otherField\":\"value\"}"; // no percentage key
-        mockMvc.perform(put("/allocations/1")
+        mockMvc.perform(put("/api/allocations/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -170,7 +170,7 @@ public class AllocationControllerTest {
     @Test
     void testReallocateEmployee_NonNumericPercentage_ReturnsBadRequest() throws Exception {
         String body = "{\"percentage\":\"not-a-number\"}";
-        mockMvc.perform(put("/allocations/1")
+        mockMvc.perform(put("/api/allocations/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -182,7 +182,7 @@ public class AllocationControllerTest {
     @Test
     void testUpdateAllocationStatus_NullStatus_ReturnsBadRequest() throws Exception {
         String body = "{\"otherField\":\"value\"}"; // no status key
-        mockMvc.perform(put("/allocations/1/status")
+        mockMvc.perform(patch("/api/allocations/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -194,7 +194,7 @@ public class AllocationControllerTest {
     @Test
     void testUpdateAllocationStatus_InvalidStatusValue_ReturnsBadRequest() throws Exception {
         String body = "{\"status\":\"TOTALLY_INVALID\"}";
-        mockMvc.perform(put("/allocations/1/status")
+        mockMvc.perform(patch("/api/allocations/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -209,12 +209,24 @@ public class AllocationControllerTest {
         when(allocationService.reallocateEmployee(eq(1L), eq(70.0))).thenReturn(response);
 
         String body = "{\"allocationPercentage\":70.0}";
-        mockMvc.perform(put("/allocations/1")
+        mockMvc.perform(put("/api/allocations/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
         verify(allocationService).reallocateEmployee(eq(1L), eq(70.0));
+    }
+
+    @Test
+    void testDeleteAllocation_Success() throws Exception {
+        doNothing().when(allocationService).deleteAllocation(1L);
+
+        mockMvc.perform(delete("/api/allocations/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Allocation deleted successfully"));
+
+        verify(allocationService).deleteAllocation(1L);
     }
 }

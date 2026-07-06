@@ -4,7 +4,6 @@ import com.erasm.core.dto.response.EmployeeResponse;
 import com.erasm.core.entity.Employee;
 import com.erasm.core.entity.EmployeeSkill;
 import com.erasm.core.entity.User;
-import com.erasm.core.enums.AllocationStatus;
 import com.erasm.core.mapper.EmployeeMapper;
 import com.erasm.core.repository.AllocationRepository;
 import com.erasm.core.repository.EmployeeRepository;
@@ -16,7 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -127,7 +125,6 @@ public class EmployeeServiceAvailableTest {
         List<EmployeeResponse> resultDep = employeeService.getAvailableEmployees(null, "Sales", null, null);
         assertTrue(resultDep.isEmpty());
 
-        List<EmployeeResponse> resultExp = employeeService.getAvailableEmployees(null, null, 1.0, null);
         // Should only return emp1 and emp2
         EmployeeResponse res1 = new EmployeeResponse();
         EmployeeResponse res2 = new EmployeeResponse();

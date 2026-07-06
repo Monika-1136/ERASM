@@ -14,4 +14,5 @@ public interface AllocationService {
     List<AllocationResponse> getAllAllocations();
     List<AllocationResponse> getAllocationsByEmployee(Long employeeId);
     List<AllocationResponse> getAllocationsByProject(Long projectId);
+    void deleteAllocation(Long allocationId);
 }

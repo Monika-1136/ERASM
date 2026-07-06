@@ -32,6 +32,7 @@ public class AuthServiceImplRefreshTokenTest {
     private RefreshTokenService refreshTokenService;
 
     @Mock
+    @SuppressWarnings("unused")
     private UserRepository userRepository;
 
     @Mock

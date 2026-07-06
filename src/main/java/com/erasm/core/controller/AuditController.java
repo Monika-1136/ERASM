@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping({"/audit-logs", "/api/audit-logs", "/audits", "/api/audits"})
+@RequestMapping("/api/audit-logs")
 @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
 public class AuditController {
 
