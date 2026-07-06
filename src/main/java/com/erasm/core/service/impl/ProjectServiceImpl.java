@@ -7,6 +7,7 @@ import com.erasm.core.entity.Project;
 import com.erasm.core.enums.AllocationStatus;
 import com.erasm.core.enums.ProjectStatus;
 import com.erasm.core.exception.ProjectNotFoundException;
+import com.erasm.core.exception.InvalidWorkflowException;
 import com.erasm.core.mapper.ProjectMapper;
 import com.erasm.core.repository.AllocationRepository;
 import com.erasm.core.repository.ProjectRepository;
@@ -79,7 +80,10 @@ public class ProjectServiceImpl implements ProjectService {
         project.setEndDate(request.getEndDate());
         project.setTechnologyStack(request.getTechnologyStack());
         project.setBudget(request.getBudget());
-        project.setProjectStatus(request.getProjectStatus());
+        
+        if (request.getProjectStatus() != null) {
+            changeProjectStatus(project, request.getProjectStatus());
+        }
 
         Project updated = projectRepository.save(project);
         auditService.logAction("UPDATE_PROJECT", "Project", updated.getProjectId(), "DELIVERY_MANAGER", "Updated project " + updated.getProjectName());
@@ -93,19 +97,60 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException("Project not found with ID: " + id));
 
-        project.setProjectStatus(ProjectStatus.CLOSED);
+        changeProjectStatus(project, ProjectStatus.COMPLETED);
         Project saved = projectRepository.save(project);
-
-        List<Allocation> allocations = allocationRepository.findByProjectProjectId(id);
-        for (Allocation alloc : allocations) {
-            if (alloc.getStatus() == AllocationStatus.ACTIVE) {
-                alloc.setStatus(AllocationStatus.RELEASED);
-                allocationRepository.save(alloc);
-            }
-        }
 
         auditService.logAction("CLOSE_PROJECT", "Project", id, "DELIVERY_MANAGER", "Closed project and released allocations");
         return projectMapper.toResponse(saved);
+    }
+
+    private void changeProjectStatus(Project project, ProjectStatus targetStatus) {
+        ProjectStatus currentStatus = project.getProjectStatus();
+        if (currentStatus == null) {
+            project.setProjectStatus(targetStatus);
+            return;
+        }
+        if (currentStatus == targetStatus) {
+            return;
+        }
+        validateProjectStatusTransition(currentStatus, targetStatus);
+        
+        project.setProjectStatus(targetStatus);
+        
+        if (targetStatus == ProjectStatus.COMPLETED || targetStatus == ProjectStatus.CANCELLED) {
+            List<Allocation> allocations = allocationRepository.findByProjectProjectId(project.getProjectId());
+            for (Allocation alloc : allocations) {
+                if (alloc.getStatus() == AllocationStatus.ACTIVE) {
+                    alloc.setStatus(AllocationStatus.RELEASED);
+                    allocationRepository.save(alloc);
+                    auditService.logAction("RELEASE_ALLOCATION", "Allocation", alloc.getAllocationId(), "SYSTEM", 
+                        "Automatically released allocation ID " + alloc.getAllocationId() + " due to project status transition to " + targetStatus);
+                }
+            }
+        }
+    }
+
+    private void validateProjectStatusTransition(ProjectStatus current, ProjectStatus target) {
+        boolean valid = false;
+        switch (current) {
+            case PLANNING:
+                if (target == ProjectStatus.PLANNED) valid = true;
+                break;
+            case PLANNED:
+                if (target == ProjectStatus.IN_PROGRESS) valid = true;
+                break;
+            case IN_PROGRESS:
+                if (target == ProjectStatus.ON_HOLD || target == ProjectStatus.COMPLETED || target == ProjectStatus.CANCELLED) valid = true;
+                break;
+            case ON_HOLD:
+                if (target == ProjectStatus.IN_PROGRESS || target == ProjectStatus.CANCELLED) valid = true;
+                break;
+            default:
+                break;
+        }
+        if (!valid) {
+            throw new InvalidWorkflowException("Invalid status transition from " + current + " to " + target);
+        }
     }
 
     @Override

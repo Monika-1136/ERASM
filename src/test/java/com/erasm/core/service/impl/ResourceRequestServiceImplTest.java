@@ -230,7 +230,7 @@ public class ResourceRequestServiceImplTest {
     }
 
     @Test
-    void testUpdateRequestStatus_AllocatedToCompleted() {
+    void testUpdateRequestStatus_AllocatedToInProgress() {
         resourceRequest.setStatus(RequestStatus.ALLOCATED);
         when(resourceRequestRepository.findById(100L)).thenReturn(Optional.of(resourceRequest));
         when(resourceRequestRepository.save(any(ResourceRequest.class))).thenReturn(resourceRequest);
@@ -238,7 +238,7 @@ public class ResourceRequestServiceImplTest {
         ResourceRequestResponse mockResponse = new ResourceRequestResponse();
         when(resourceRequestMapper.toResponse(any())).thenReturn(mockResponse);
 
-        assertDoesNotThrow(() -> resourceRequestService.updateRequestStatus(100L, RequestStatus.COMPLETED));
+        assertDoesNotThrow(() -> resourceRequestService.updateRequestStatus(100L, RequestStatus.IN_PROGRESS));
     }
 
     @Test

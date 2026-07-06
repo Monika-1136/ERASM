@@ -135,6 +135,7 @@ public class ResourceRequestServiceImpl implements ResourceRequestService {
         if (current == target) {
             return;
         }
+        
         boolean valid = false;
         switch (current) {
             case DRAFT:
@@ -144,13 +145,19 @@ public class ResourceRequestServiceImpl implements ResourceRequestService {
                 if (target == RequestStatus.RESOURCE_MANAGER_REVIEW) valid = true;
                 break;
             case RESOURCE_MANAGER_REVIEW:
-                if (target == RequestStatus.APPROVED) valid = true;
+                if (target == RequestStatus.APPROVED || target == RequestStatus.REJECTED) valid = true;
                 break;
             case APPROVED:
                 if (target == RequestStatus.ALLOCATED) valid = true;
                 break;
+            case REJECTED:
+                if (target == RequestStatus.DRAFT) valid = true;
+                break;
             case ALLOCATED:
-                if (target == RequestStatus.COMPLETED) valid = true;
+                if (target == RequestStatus.IN_PROGRESS) valid = true;
+                break;
+            case IN_PROGRESS:
+                if (target == RequestStatus.COMPLETED || target == RequestStatus.CANCELLED) valid = true;
                 break;
             default:
                 break;

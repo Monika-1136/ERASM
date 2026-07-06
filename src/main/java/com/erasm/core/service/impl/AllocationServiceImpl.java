@@ -5,7 +5,9 @@ import com.erasm.core.dto.response.AllocationResponse;
 import com.erasm.core.entity.Allocation;
 import com.erasm.core.entity.Employee;
 import com.erasm.core.entity.Project;
+import com.erasm.core.entity.ResourceRequest;
 import com.erasm.core.enums.AllocationStatus;
+import com.erasm.core.enums.RequestStatus;
 import com.erasm.core.exception.AllocationException;
 import com.erasm.core.exception.ProjectNotFoundException;
 import com.erasm.core.exception.ResourceNotFoundException;
@@ -13,6 +15,7 @@ import com.erasm.core.mapper.AllocationMapper;
 import com.erasm.core.repository.AllocationRepository;
 import com.erasm.core.repository.EmployeeRepository;
 import com.erasm.core.repository.ProjectRepository;
+import com.erasm.core.repository.ResourceRequestRepository;
 import com.erasm.core.service.AllocationService;
 import com.erasm.core.service.AuditService;
 import org.slf4j.Logger;
@@ -32,17 +35,20 @@ public class AllocationServiceImpl implements AllocationService {
     private final AllocationRepository allocationRepository;
     private final EmployeeRepository employeeRepository;
     private final ProjectRepository projectRepository;
+    private final ResourceRequestRepository resourceRequestRepository;
     private final AllocationMapper allocationMapper;
     private final AuditService auditService;
 
     public AllocationServiceImpl(AllocationRepository allocationRepository,
                                   EmployeeRepository employeeRepository,
                                   ProjectRepository projectRepository,
+                                  ResourceRequestRepository resourceRequestRepository,
                                   AllocationMapper allocationMapper,
                                   AuditService auditService) {
         this.allocationRepository = allocationRepository;
         this.employeeRepository = employeeRepository;
         this.projectRepository = projectRepository;
+        this.resourceRequestRepository = resourceRequestRepository;
         this.allocationMapper = allocationMapper;
         this.auditService = auditService;
     }
@@ -78,6 +84,12 @@ public class AllocationServiceImpl implements AllocationService {
 
         validateAllocationCap(request.getEmployeeId(), request.getAllocationPercentage(), null);
 
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            if (!request.getStartDate().isBefore(request.getEndDate())) {
+                throw new AllocationException("Allocation failed. Start date must be strictly before end date.");
+            }
+        }
+
         Allocation allocation = new Allocation();
         allocation.setEmployee(employee);
         allocation.setProject(project);
@@ -85,6 +97,22 @@ public class AllocationServiceImpl implements AllocationService {
         allocation.setStartDate(request.getStartDate());
         allocation.setEndDate(request.getEndDate());
         allocation.setStatus(request.getStatus() != null ? request.getStatus() : AllocationStatus.ACTIVE);
+
+        if (request.getResourceRequestId() != null) {
+            ResourceRequest resourceRequest = resourceRequestRepository.findById(request.getResourceRequestId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Resource request not found with ID: " + request.getResourceRequestId()));
+            
+            if (resourceRequest.getStatus() != RequestStatus.APPROVED && resourceRequest.getStatus() != RequestStatus.IN_PROGRESS) {
+                throw new AllocationException("Allocation failed. Associated resource request must be in APPROVED status. Current status is " + resourceRequest.getStatus());
+            }
+            
+            if (resourceRequest.getStatus() == RequestStatus.APPROVED) {
+                resourceRequest.setStatus(RequestStatus.IN_PROGRESS);
+                resourceRequestRepository.save(resourceRequest);
+            }
+            
+            allocation.setResourceRequest(resourceRequest);
+        }
 
         Allocation saved = allocationRepository.save(allocation);
         auditService.logAction("ALLOCATE_EMPLOYEE", "Allocation", saved.getAllocationId(), "RESOURCE_MANAGER",

@@ -3,6 +3,7 @@ package com.erasm.core.controller;
 import com.erasm.core.dto.request.AllocationRequest;
 import com.erasm.core.dto.response.AllocationResponse;
 import com.erasm.core.enums.AllocationStatus;
+import com.erasm.core.exception.GlobalExceptionHandler;
 import com.erasm.core.service.AllocationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,9 @@ public class AllocationControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(allocationController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(allocationController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
 
         response = new AllocationResponse();
         response.setAllocationId(1L);
@@ -86,7 +89,7 @@ public class AllocationControllerTest {
     void testReleaseEmployee_Success() throws Exception {
         when(allocationService.releaseEmployee(1L)).thenReturn(response);
 
-        mockMvc.perform(patch("/api/allocations/1/release"))
+        mockMvc.perform(post("/api/allocations/1/release"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
 
@@ -98,7 +101,7 @@ public class AllocationControllerTest {
         when(allocationService.updateAllocationStatus(eq(1L), eq(AllocationStatus.ACTIVE))).thenReturn(response);
 
         String body = "{\"status\":\"ACTIVE\"}";
-        mockMvc.perform(patch("/api/allocations/1/status")
+        mockMvc.perform(put("/api/allocations/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -182,7 +185,7 @@ public class AllocationControllerTest {
     @Test
     void testUpdateAllocationStatus_NullStatus_ReturnsBadRequest() throws Exception {
         String body = "{\"otherField\":\"value\"}"; // no status key
-        mockMvc.perform(patch("/api/allocations/1/status")
+        mockMvc.perform(put("/api/allocations/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -194,7 +197,7 @@ public class AllocationControllerTest {
     @Test
     void testUpdateAllocationStatus_InvalidStatusValue_ReturnsBadRequest() throws Exception {
         String body = "{\"status\":\"TOTALLY_INVALID\"}";
-        mockMvc.perform(patch("/api/allocations/1/status")
+        mockMvc.perform(put("/api/allocations/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())

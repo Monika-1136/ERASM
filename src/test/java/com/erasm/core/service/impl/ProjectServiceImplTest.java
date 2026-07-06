@@ -60,7 +60,7 @@ public class ProjectServiceImplTest {
         project.setEndDate(LocalDate.now().plusMonths(6));
         project.setTechnologyStack("Java, Spring Boot, React");
         project.setBudget(BigDecimal.valueOf(100000));
-        project.setProjectStatus(ProjectStatus.ACTIVE);
+        project.setProjectStatus(ProjectStatus.IN_PROGRESS);
 
         projectRequest = new ProjectRequest();
         projectRequest.setProjectName("Healthcare Portal");
@@ -69,7 +69,7 @@ public class ProjectServiceImplTest {
         projectRequest.setEndDate(LocalDate.now().plusMonths(6));
         projectRequest.setTechnologyStack("Java, Spring Boot, React");
         projectRequest.setBudget(BigDecimal.valueOf(100000));
-        projectRequest.setProjectStatus(ProjectStatus.ACTIVE);
+        projectRequest.setProjectStatus(ProjectStatus.IN_PROGRESS);
     }
 
     @Test
@@ -166,7 +166,7 @@ public class ProjectServiceImplTest {
         ProjectResponse response = projectService.closeProject(1L);
 
         assertNotNull(response);
-        assertEquals(ProjectStatus.CLOSED, project.getProjectStatus());
+        assertEquals(ProjectStatus.COMPLETED, project.getProjectStatus());
         assertEquals(AllocationStatus.RELEASED, alloc1.getStatus()); // Allocated became released
         assertEquals(AllocationStatus.RELEASED, alloc2.getStatus()); // Released stayed released
         verify(allocationRepository, times(1)).save(alloc1);

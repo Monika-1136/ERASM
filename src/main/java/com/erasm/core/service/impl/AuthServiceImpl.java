@@ -11,14 +11,14 @@ import com.erasm.core.entity.Role;
 import com.erasm.core.entity.User;
 import com.erasm.core.enums.RoleName;
 import com.erasm.core.exception.DuplicateResourceException;
-import com.erasm.core.exception.ResourceNotFoundException;
 import com.erasm.core.exception.InvalidRefreshTokenException;
+import com.erasm.core.exception.ResourceNotFoundException;
 import com.erasm.core.repository.EmployeeRepository;
 import com.erasm.core.repository.RoleRepository;
 import com.erasm.core.repository.UserRepository;
 import com.erasm.core.security.jwt.JwtUtil;
-import com.erasm.core.service.AuthService;
 import com.erasm.core.service.AuditService;
+import com.erasm.core.service.AuthService;
 import com.erasm.core.service.RefreshTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,8 +99,22 @@ public class AuthServiceImpl implements AuthService {
             throw new DuplicateResourceException("Email already registered: " + request.getEmail());
         }
 
-        Role role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found with ID: " + request.getRoleId()));
+        Role role = null;
+        if (request.getRoleId() != null) {
+            role = roleRepository.findById(request.getRoleId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Role not found with ID: " + request.getRoleId()));
+        } else if (request.getRole() != null && !request.getRole().trim().isEmpty()) {
+            RoleName roleName;
+            try {
+                roleName = RoleName.fromString(request.getRole());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid role name: " + request.getRole());
+            }
+            role = roleRepository.findByRoleName(roleName)
+                    .orElseThrow(() -> new ResourceNotFoundException("Role not found with name: " + request.getRole()));
+        } else {
+            throw new IllegalArgumentException("Role ID or Role Name must be provided");
+        }
 
         User user = new User();
         user.setFullName(request.getFullName());
@@ -173,5 +187,6 @@ public class AuthServiceImpl implements AuthService {
             refreshTokenService.deleteByUser(user.getUserId());
             auditService.logAction("LOGOUT_REFRESH", "User", user.getUserId(), user.getEmail(), "User logged out via refresh token");
         });
+        SecurityContextHolder.clearContext();
     }
 }

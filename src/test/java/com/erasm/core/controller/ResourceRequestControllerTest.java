@@ -112,7 +112,7 @@ public class ResourceRequestControllerTest {
         when(resourceRequestService.updateRequestStatus(eq(1L), eq(RequestStatus.APPROVED))).thenReturn(response);
 
         String body = "{\"status\":\"APPROVED\"}";
-        mockMvc.perform(patch("/api/resource-requests/1/status")
+        mockMvc.perform(put("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -125,7 +125,7 @@ public class ResourceRequestControllerTest {
     @Test
     void testUpdateRequestStatus_NullStatus_ReturnsBadRequest() throws Exception {
         String body = "{\"otherField\":\"value\"}"; // no "status" key
-        mockMvc.perform(patch("/api/resource-requests/1/status")
+        mockMvc.perform(put("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
@@ -137,7 +137,7 @@ public class ResourceRequestControllerTest {
     @Test
     void testUpdateRequestStatus_BlankStatus_ReturnsBadRequest() throws Exception {
         String body = "{\"status\":\"   \"}"; // blank
-        mockMvc.perform(patch("/api/resource-requests/1/status")
+        mockMvc.perform(put("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -148,7 +148,7 @@ public class ResourceRequestControllerTest {
     @Test
     void testUpdateRequestStatus_InvalidStatusValue_ReturnsBadRequest() throws Exception {
         String body = "{\"status\":\"INVALID_STATUS\"}";
-        mockMvc.perform(patch("/api/resource-requests/1/status")
+        mockMvc.perform(put("/api/resource-requests/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())

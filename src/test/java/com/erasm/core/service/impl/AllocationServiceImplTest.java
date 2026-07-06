@@ -295,4 +295,15 @@ public class AllocationServiceImplTest {
 
         assertThrows(AllocationException.class, () -> allocationService.reallocateEmployee(50L, 50.0));
     }
+
+    @Test
+    void testAllocateEmployee_StartDateAfterEndDate_ThrowsAllocationException() {
+        allocationRequest.setStartDate(LocalDate.now().plusDays(5));
+        allocationRequest.setEndDate(LocalDate.now());
+
+        when(employeeRepository.findById(10L)).thenReturn(Optional.of(employee));
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+
+        assertThrows(AllocationException.class, () -> allocationService.allocateEmployee(allocationRequest));
+    }
 }

@@ -163,6 +163,50 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadable(
             org.springframework.http.converter.HttpMessageNotReadableException ex) {
         logger.warn("Malformed JSON request body: {}", ex.getMessage());
+        
+        // First check if any cause in the hierarchy is an IllegalArgumentException
+        Throwable current = ex;
+        while (current != null) {
+            if (current instanceof IllegalArgumentException) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error(current.getMessage()));
+            }
+            current = current.getCause();
+        }
+
+        Throwable cause = ex.getCause();
+        if (cause instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException) {
+            com.fasterxml.jackson.databind.exc.InvalidFormatException ife = 
+                    (com.fasterxml.jackson.databind.exc.InvalidFormatException) cause;
+            if (ife.getTargetType() != null && ife.getTargetType().isEnum()) {
+                @SuppressWarnings("unchecked")
+                Class<? extends Enum> enumClass = (Class<? extends Enum>) ife.getTargetType();
+                String validValues = Arrays.stream(enumClass.getEnumConstants())
+                        .map(Enum::name)
+                        .collect(Collectors.joining(", "));
+                String fieldName = ife.getPath().stream()
+                        .map(com.fasterxml.jackson.databind.JsonMappingException.Reference::getFieldName)
+                        .filter(java.util.Objects::nonNull)
+                        .collect(Collectors.joining("."));
+                String message = String.format("Invalid value '%s' for field '%s'. Accepted values are: [%s]",
+                        ife.getValue(), fieldName, validValues);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error(message));
+            }
+        } else if (cause instanceof com.fasterxml.jackson.databind.exc.ValueInstantiationException) {
+            Throwable rootCause = cause.getCause();
+            if (rootCause instanceof IllegalArgumentException) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.error(rootCause.getMessage()));
+            }
+        } else if (cause instanceof com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException) {
+            com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException upe = 
+                    (com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException) cause;
+            String message = String.format("Unrecognized field '%s'. Allowed fields are: %s",
+                    upe.getPropertyName(), upe.getKnownPropertyIds().toString());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(message));
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Invalid request body. Please check the JSON format and field values."));
     }

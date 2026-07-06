@@ -3,6 +3,7 @@ package com.erasm.core.controller;
 import com.erasm.core.dto.request.ProjectRequest;
 import com.erasm.core.dto.response.ProjectResponse;
 import com.erasm.core.enums.ProjectStatus;
+import com.erasm.core.exception.GlobalExceptionHandler;
 import com.erasm.core.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,14 +43,16 @@ public class ProjectControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(projectController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(projectController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
 
         projectRequest = new ProjectRequest();
         projectRequest.setProjectName("Healthcare Portal");
         projectRequest.setClientName("Global Health Inc");
         projectRequest.setTechnologyStack("Java");
         projectRequest.setBudget(BigDecimal.valueOf(50000));
-        projectRequest.setProjectStatus(ProjectStatus.ACTIVE);
+        projectRequest.setProjectStatus(ProjectStatus.IN_PROGRESS);
 
         projectResponse = new ProjectResponse();
         projectResponse.setProjectId(1L);
@@ -57,7 +60,7 @@ public class ProjectControllerTest {
         projectResponse.setClientName("Global Health Inc");
         projectResponse.setTechnologyStack("Java");
         projectResponse.setBudget(BigDecimal.valueOf(50000));
-        projectResponse.setProjectStatus(ProjectStatus.ACTIVE);
+        projectResponse.setProjectStatus(ProjectStatus.IN_PROGRESS);
     }
 
     @Test
@@ -110,7 +113,7 @@ public class ProjectControllerTest {
     void testCloseProject_Success() throws Exception {
         when(projectService.closeProject(1L)).thenReturn(projectResponse);
 
-        mockMvc.perform(patch("/api/projects/1/close"))
+        mockMvc.perform(post("/api/projects/1/close"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }

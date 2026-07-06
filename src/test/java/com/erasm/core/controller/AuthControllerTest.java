@@ -5,6 +5,7 @@ import com.erasm.core.dto.request.RegisterRequest;
 import com.erasm.core.dto.response.JwtResponse;
 import com.erasm.core.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.erasm.core.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +37,9 @@ public class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(authController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Test
